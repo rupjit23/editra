@@ -1,0 +1,66 @@
+@import "tailwindcss";
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Disable scrolling */
+  background-color: #1e1e2e; /* Match your editor bg */
+}
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg,#4ade80, #b05d87);
+  border-radius: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #4f46e5, #db2777);
+}
+
+/*  #ec4899*/
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+@keyframes wave {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-wave {
+  animation: wave 6s linear infinite;
+}
+
+@keyframes glow-soft {
+  0%, 100% { box-shadow: 0 0 6px rgba(99,102,241,0.4); }
+  50% { box-shadow: 0 0 14px rgba(139,92,246,0.6); }
+}
+.animate-glow-soft {
+  animation: glow-soft 4s ease-in-out infinite;
+}
+
+@keyframes glow-soft-alt {
+  0%, 100% { box-shadow: 0 0 6px rgba(16,185,129,0.4); }
+  50% { box-shadow: 0 0 14px rgba(20,184,166,0.6); }
+}
+.animate-glow-soft-alt {
+  animation: glow-soft-alt 4s ease-in-out infinite;
+}
+
