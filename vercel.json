@@ -1,13 +1,5 @@
 {
-    "routes":[
-        {
-            "path":"/",
-            "dest":"/"
-        },
-        {
-            "path":"/login",
-            "dest":"/"
-        }
-      
-    ]
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ]
 }
