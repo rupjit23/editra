@@ -73,7 +73,8 @@ function Login() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: window.location.origin + "/login", // come back to this page
+          // redirectTo: window.location.origin + "/login", // come back to this page
+          redirectTo: window.location.origin + "/dashboard"
         },
       });
 
