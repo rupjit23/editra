@@ -1,6 +1,6 @@
 import { io } from "socket.io-client";
 
-const BACKEND_URL = "http://localhost:5000"; 
+const BACKEND_URL = "https://editra.onrender.com"; 
 
 export const initSocket = async () => {
   const options = {
