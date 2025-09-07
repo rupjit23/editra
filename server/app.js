@@ -1,13 +1,19 @@
-
-
-
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+
+const io = new Server(server, {
+  cors: {
+    origin: [
+              
+      "https://try-editra.vercel.app/", // deployed frontend
+    ],
+    methods: ["GET", "POST"],
+  },
+});
 
 const userSocketMap = {};
 
@@ -22,8 +28,6 @@ const getAllConnectedClients = (roomId) => {
 };
 
 io.on("connection", (socket) => {
-  // console.log(`User connected: ${socket.id}`);
-
   // --- JOIN ROOM ---
   socket.on("join", ({ roomId, username }) => {
     userSocketMap[socket.id] = username;
@@ -31,7 +35,6 @@ io.on("connection", (socket) => {
 
     const clients = getAllConnectedClients(roomId);
 
-    // Notify all clients in the room
     clients.forEach(({ socketId }) => {
       io.to(socketId).emit("joined", {
         clients,
@@ -56,19 +59,17 @@ io.on("connection", (socket) => {
   });
 
   // --- WEBRTC SIGNALING ---
-// --- WEBRTC SIGNALING ---
-socket.on("webrtc-offer", ({ roomId, offer }) => {
-  socket.to(roomId).emit("webrtc-offer", { from: socket.id, offer });
-});
+  socket.on("webrtc-offer", ({ roomId, offer }) => {
+    socket.to(roomId).emit("webrtc-offer", { from: socket.id, offer });
+  });
 
-socket.on("webrtc-answer", ({ roomId, answer }) => {
-  socket.to(roomId).emit("webrtc-answer", { from: socket.id, answer });
-});
+  socket.on("webrtc-answer", ({ roomId, answer }) => {
+    socket.to(roomId).emit("webrtc-answer", { from: socket.id, answer });
+  });
 
-socket.on("webrtc-ice-candidate", ({ roomId, candidate }) => {
-  socket.to(roomId).emit("webrtc-ice-candidate", { from: socket.id, candidate });
-});
-
+  socket.on("webrtc-ice-candidate", ({ roomId, candidate }) => {
+    socket.to(roomId).emit("webrtc-ice-candidate", { from: socket.id, candidate });
+  });
 
   // --- DISCONNECT ---
   socket.on("disconnecting", () => {
@@ -81,19 +82,10 @@ socket.on("webrtc-ice-candidate", ({ roomId, candidate }) => {
     });
 
     delete userSocketMap[socket.id];
-    socket.leave();
   });
 });
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  // console.log("✅ Server is running");
-  // console.log(`🌐 Server listening at http://localhost:${PORT}`);
+  // console.log(`✅ Server running on port ${PORT}`);
 });
-
-
-
-
-
-
-
