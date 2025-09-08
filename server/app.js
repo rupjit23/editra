@@ -1,4 +1,3 @@
-
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
@@ -11,7 +10,7 @@ const io = new Server(server, {
     origin: [
       "http://localhost:3000",   // React dev server
       "http://localhost:5173",   // Vite dev server
-      "https://try-editra.vercel.app" // deployed frontend (no trailing slash!)
+      "https://try-editra.vercel.app" // deployed frontend
     ],
     methods: ["GET", "POST"],
   },
@@ -39,6 +38,7 @@ io.on("connection", (socket) => {
 
     const clients = getAllConnectedClients(roomId);
 
+    // notify everyone (including sender)
     clients.forEach(({ socketId }) => {
       io.to(socketId).emit("joined", {
         clients,
@@ -65,29 +65,28 @@ io.on("connection", (socket) => {
   });
 
   // --- WEBRTC SIGNALING ---
-  socket.on("webrtc-offer", ({ roomId, offer }) => {
-    socket.to(roomId).emit("webrtc-offer", { from: socket.id, offer });
+  socket.on("webrtc-offer", ({ roomId, offer, to }) => {
+    io.to(to).emit("webrtc-offer", { from: socket.id, offer });
   });
 
-  socket.on("webrtc-answer", ({ roomId, answer }) => {
-    socket.to(roomId).emit("webrtc-answer", { from: socket.id, answer });
+  socket.on("webrtc-answer", ({ roomId, answer, to }) => {
+    io.to(to).emit("webrtc-answer", { from: socket.id, answer });
   });
 
-  socket.on("webrtc-ice-candidate", ({ roomId, candidate }) => {
-    socket.to(roomId).emit("webrtc-ice-candidate", { from: socket.id, candidate });
+  socket.on("webrtc-ice-candidate", ({ roomId, candidate, to }) => {
+    io.to(to).emit("webrtc-ice-candidate", { from: socket.id, candidate });
   });
 
   // --- DISCONNECT ---
   socket.on("disconnecting", () => {
     const rooms = [...socket.rooms];
+
     rooms.forEach((roomId) => {
       socket.in(roomId).emit("disconnected", {
         socketId: socket.id,
         username: userSocketMap[socket.id],
       });
     });
-
-    // console.log(` ${userSocketMap[socket.id]} disconnected`);
 
     delete userSocketMap[socket.id];
   });
@@ -98,8 +97,7 @@ app.get("/", (req, res) => {
   res.send(" Backend server is running");
 });
 
-// PORT handling (local: 5000, prod: from env)
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  // console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
