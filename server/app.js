@@ -1,3 +1,4 @@
+
 import express from "express";
 import http from "http";
 import { Server } from "socket.io";
@@ -8,8 +9,9 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: [
-              
-      "https://try-editra.vercel.app/", // deployed frontend
+      "http://localhost:3000",   // React dev server
+      "http://localhost:5173",   // Vite dev server
+      "https://try-editra.vercel.app" // deployed frontend (no trailing slash!)
     ],
     methods: ["GET", "POST"],
   },
@@ -17,7 +19,7 @@ const io = new Server(server, {
 
 const userSocketMap = {};
 
-// Helper to get all connected clients in a room
+// Helper: Get all connected clients in a room
 const getAllConnectedClients = (roomId) => {
   return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(
     (socketId) => ({
@@ -28,6 +30,8 @@ const getAllConnectedClients = (roomId) => {
 };
 
 io.on("connection", (socket) => {
+  console.log(` New client connected: ${socket.id}`);
+
   // --- JOIN ROOM ---
   socket.on("join", ({ roomId, username }) => {
     userSocketMap[socket.id] = username;
@@ -42,6 +46,8 @@ io.on("connection", (socket) => {
         socketId: socket.id,
       });
     });
+
+    console.log(` ${username} joined room ${roomId}`);
   });
 
   // --- CODE SYNC ---
@@ -81,11 +87,19 @@ io.on("connection", (socket) => {
       });
     });
 
+    // console.log(` ${userSocketMap[socket.id]} disconnected`);
+
     delete userSocketMap[socket.id];
   });
 });
 
+// Root route for sanity check
+app.get("/", (req, res) => {
+  res.send(" Backend server is running");
+});
+
+// PORT handling (local: 5000, prod: from env)
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  // console.log(`✅ Server running on port ${PORT}`);
+  // console.log(`🚀 Server running on port ${PORT}`);
 });
