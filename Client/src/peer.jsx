@@ -1,10 +1,10 @@
+
 class PeerService {
   constructor() {
     this.peer = new RTCPeerConnection({
       iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
     });
 
-    // 🔑 Queue for ICE candidates received before remoteDescription is set
     this.pendingCandidates = [];
     this.remoteDescriptionSet = false;
   }
@@ -31,6 +31,22 @@ class PeerService {
     };
   }
 
+  onConnectionStateChange(cb) {
+    this.peer.onconnectionstatechange = () => {
+      cb(this.peer.connectionState);
+    };
+  }
+
+  createDataChannel(label = "chat") {
+    return this.peer.createDataChannel(label);
+  }
+
+  onDataChannel(cb) {
+    this.peer.ondatachannel = (event) => {
+      cb(event.channel);
+    };
+  }
+
   async getOffer() {
     const offer = await this.peer.createOffer();
     await this.peer.setLocalDescription(offer);
@@ -41,7 +57,6 @@ class PeerService {
     await this.peer.setRemoteDescription(new RTCSessionDescription(offer));
     this.remoteDescriptionSet = true;
 
-    // Flush queued candidates
     for (const cand of this.pendingCandidates) {
       await this.peer.addIceCandidate(new RTCIceCandidate(cand));
     }
@@ -58,7 +73,6 @@ class PeerService {
     await this.peer.setRemoteDescription(new RTCSessionDescription(answer));
     this.remoteDescriptionSet = true;
 
-    // Flush queued candidates
     for (const cand of this.pendingCandidates) {
       await this.peer.addIceCandidate(new RTCIceCandidate(cand));
     }
@@ -71,12 +85,14 @@ class PeerService {
     if (this.remoteDescriptionSet) {
       await this.peer.addIceCandidate(new RTCIceCandidate(candidate));
     } else {
-      // Queue until remoteDescription is ready
       this.pendingCandidates.push(candidate);
     }
   }
 
   close() {
+    this.peer.getSenders().forEach((sender) => {
+      if (sender.track) sender.track.stop();
+    });
     this.peer.close();
   }
 }
