@@ -21,7 +21,7 @@
 - **Backend:** Node.js, Express.js  
 - **Database:** Supabase  
 - **Real-Time Communication:** Socket.IO + WebRTC  
-- **Authentication & Security:** JWT, Cookies  
+  
 
 ---
 
